@@ -1,5 +1,5 @@
 # js-password-checker
-A few utilities to help check passwords in JavaScript
+A few utilities to help validate new passwords creation in JavaScript
 
 ## Motivation
 
