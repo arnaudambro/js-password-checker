@@ -1,4 +1,49 @@
-export const checks = {
+
+export const onVerify = ({
+  password,
+  newPassword,
+  verifyPassword,
+  checkExistingPassword = false,
+  codesToErrors = codesToErrorsI18n.en,
+}) => {
+  newPassword = newPassword.trim()
+  verifyPassword = verifyPassword.trim()
+  password = password?.trim()
+  if (checkExistingPassword) {
+    if (password === '') {
+      return { ok: false, focus: 'password', error: codesToErrors.IS_EMPTY }
+    }
+  }
+  if (checkErrorPassword(newPassword)) {
+    return {
+      ok: false,
+      focus: 'newPassword',
+      error: codesToErrors[checkErrorPassword(newPassword)],
+    }
+  }
+  if (checkExistingPassword && password === newPassword) {
+    return { ok: false, focus: 'newPassword', error: codesToErrors.NOT_SAME_AS_PREVIOUS_PASSWORD }
+  }
+  if (verifyPassword === '') {
+    return { ok: false, focus: 'verifyPassword', error: codesToErrors.VERIFY_PASSWORD_EMPTY }
+  }
+  if (newPassword !== verifyPassword) {
+    return { ok: false, focus: 'verifyPassword', error: codesToErrors.VERIFY_PASSWORD_DIFFERENT }
+  }
+  return { ok: true }
+}
+
+export const computeHints = (newPassword, codesToHints) =>
+  Object.keys(codesToHints).map((check, index, array) => {
+    let caption = codesToHints[check]
+    // capitalize the first caption
+    if (index === 0) caption = capitalize(caption)
+    if (index !== array.length - 1) caption = `${caption}, `
+    return { caption, disabled: !checks[check](newPassword) }
+  })
+
+
+const checks = {
   IS_EMPTY: (password) => password === '',
   IS_TOO_SHORT_OR_TOO_LONG: (password) => password.length < 8 || password.length > 32,
   NO_NUMBER: (password) => !/\d/.test(password),
@@ -15,7 +60,7 @@ export const checkErrorPassword = (password) => {
   return null
 }
 
-export const codesToErrorsI18n = {
+const codesToErrorsI18n = {
   de: {
     IS_EMPTY: 'Das Passwort darf nicht leer sein',
     IS_TOO_SHORT_OR_TOO_LONG: 'Das Passwort muss zwischen 6 und 32 Zeichen lang sein',
@@ -90,7 +135,7 @@ export const codesToErrorsI18n = {
   },
 }
 
-export const codesToHintsI18n = {
+const codesToHintsI18n = {
   de: {
     IS_TOO_SHORT_OR_TOO_LONG: 'zwischen 6 und 32 Zeichen',
     NO_NUMBER: 'mindestens eine Ziffer',
@@ -140,48 +185,5 @@ export const codesToHintsI18n = {
     NO_SPECIAL: 'ten minste één speciaal teken',
   },
 }
-
-export const onVerify = ({
-  password,
-  newPassword,
-  verifyPassword,
-  checkExistingPassword = false,
-  codesToErrors = codesToErrorsI18n.en,
-}) => {
-  newPassword = newPassword.trim()
-  verifyPassword = verifyPassword.trim()
-  password = password?.trim()
-  if (checkExistingPassword) {
-    if (password === '') {
-      return { ok: false, focus: 'password', error: codesToErrors.IS_EMPTY }
-    }
-  }
-  if (checkErrorPassword(newPassword)) {
-    return {
-      ok: false,
-      focus: 'newPassword',
-      error: codesToErrors[checkErrorPassword(newPassword)],
-    }
-  }
-  if (checkExistingPassword && password === newPassword) {
-    return { ok: false, focus: 'newPassword', error: codesToErrors.NOT_SAME_AS_PREVIOUS_PASSWORD }
-  }
-  if (verifyPassword === '') {
-    return { ok: false, focus: 'verifyPassword', error: codesToErrors.VERIFY_PASSWORD_EMPTY }
-  }
-  if (newPassword !== verifyPassword) {
-    return { ok: false, focus: 'verifyPassword', error: codesToErrors.VERIFY_PASSWORD_DIFFERENT }
-  }
-  return { ok: true }
-}
-
-export const computeHints = (newPassword, codesToHints) =>
-  Object.keys(codesToHints).map((check, index, array) => {
-    let caption = codesToHints[check]
-    // capitalize the first caption
-    if (index === 0) caption = capitalize(caption)
-    if (index !== array.length - 1) caption = `${caption}, `
-    return { caption, disabled: !checks[check](newPassword) }
-  })
 
 const capitalize = (string) => string.charAt(0).toUpperCase() + string.slice(1)
